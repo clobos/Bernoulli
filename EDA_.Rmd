@@ -8,7 +8,6 @@ output:
     fig_caption: yes
     number_sections: yes
     keep_tex: yes
-    highlight: zenburn
 ---
 
 ```{r setup, include=FALSE}
@@ -23,7 +22,7 @@ knitr::opts_chunk$set(echo = TRUE,
 library(tidyverse)
 library(hnp)
 
-dados <- read.csv("K:/Meu Drive/HD/Articulos/Actual/Bernoulli/R/dados_03_05_23/analise_dados/dados/Arthritis.txt", sep="", 
+dados <- read.csv("Arthritis.txt", sep="", 
                   stringsAsFactors=TRUE)
 
 dados$id<- 1:nrow(dados)
