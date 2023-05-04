@@ -1,0 +1,228 @@
+---
+title: "Análise de dados (EDA)"
+author: "Cristian Villegas"
+date: "`r Sys.Date()`"
+output: 
+  pdf_document: 
+    toc: yes
+    fig_caption: yes
+    number_sections: yes
+    keep_tex: yes
+    highlight: zenburn
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      message = FALSE,
+                      warning = FALSE)
+```
+
+# Leitura de dados
+
+```{r}
+library(tidyverse)
+library(hnp)
+
+dados <- read.csv("K:/Meu Drive/HD/Articulos/Actual/Bernoulli/R/dados_03_05_23/analise_dados/dados/Arthritis.txt", sep="", 
+                  stringsAsFactors=TRUE)
+
+dados$id<- 1:nrow(dados)
+
+dados<- tibble(dados)
+dados
+```
+
+# Alguns resumos dos dados
+```{r}
+dados %>% 
+  group_by(Sex) %>% 
+  summarise( n = n())
+
+dados %>% 
+  group_by(Sex) %>% 
+  summarise(media_Sex = mean(Age))
+
+dados %>% 
+  group_by(Group) %>% 
+  summarise( n = n())
+
+dados %>% 
+  group_by(Group) %>% 
+  summarise( media_Age = mean(Age))
+
+
+dados %>% 
+  group_by(Sex, Group) %>% 
+  summarise( n = n())
+```
+
+# Gráficos de interesse
+```{r}
+ggplot(dados, aes(x = Sex)) +
+  geom_bar()
+
+ggplot(dados, aes(x = Group)) +
+  geom_bar()
+
+```
+
+# Transformando os dados
+
+```{r}
+dados_longos<- dados %>%
+  pivot_longer(
+    cols = starts_with("Week"),
+    names_to = "week",
+    names_prefix = "Week",
+    values_to = "Y",
+    values_drop_na = TRUE
+  )
+```
+
+## Gráficos antes de transformar dados
+
+```{r}
+ggplot(dados_longos, aes(Sex, Age, col = Age < 50)) + 
+  geom_boxplot()+
+  geom_hline(yintercept = 50, col = "black", linetype = 2)+
+  theme_minimal()
+
+ggplot(dados_longos, aes(Group, Age, col = Age < 50)) + 
+  geom_boxplot()+
+  geom_hline(yintercept = 50, col = "black", linetype = 2)+
+  theme_minimal()
+
+ggplot(dados_longos, aes(x = Sex, fill = Group)) + 
+  geom_bar(position=position_dodge())+
+  theme_minimal()
+
+ggplot(dados_longos, aes(Age, fill = Age < 50)) + 
+  #geom_histogram(fill = "yellow", 
+  #               aes(y = after_stat(density)), bins=6)+
+  geom_density(alpha=0.2)+
+  facet_wrap(~Sex)+
+  theme_minimal()
+```
+
+## Transformando dados (seguindo o feito pelo Jalmar)
+
+```{r}
+dados_longos$Sex<- recode_factor(dados_longos$Sex, `F` = "0", `M` = "1")
+
+dados_longos$Age<- factor(case_when(dados_longos$Age <50  ~ 1,
+  dados_longos$Age >=50 ~ 0, .default = dados_longos$Age), 
+  levels = c(0, 1))
+
+dados_longos$Group<- recode_factor(dados_longos$Group, `P` = "0", `A` = "1")
+
+dados_longos$week<- factor(dados_longos$week, 
+                           levels = c(0, 1, 5, 9, 13) )
+
+dados_longos %>% 
+  group_by(week) %>% 
+  summarise( n = n())
+```
+
+
+# Gráficos de perfis
+
+## Sexo Female == 0
+```{r}
+dados_longos %>% filter(Sex == "0") %>%
+  ggplot(aes(week, Y, group = id)) +
+  geom_point()+
+  geom_line()+
+  theme_minimal()+
+  scale_y_continuous(breaks = c(0,1))+
+  facet_wrap(~id)
+```
+
+## Sexo Male == 1
+
+```{r}
+dados_longos %>% filter(Sex == "1") %>%
+  ggplot(aes(week, Y, group = id)) +
+  geom_point()+
+  geom_line()+
+  theme_minimal()+
+  scale_y_continuous(breaks = c(0,1))+
+  facet_wrap(~id)
+```
+
+# Ajuste de modelos
+
+## cloglog
+```{r}
+modelo_cloglog<- glm(Y ~ Sex + 
+               Age + 
+               Group + 
+               as.numeric(week),
+             family = binomial(link = "cloglog"),
+             data= dados_longos)
+modelo_cloglog$family
+summary(modelo_cloglog)
+hnp(modelo_cloglog, print.on = TRUE)
+
+plot(predict.glm(modelo_cloglog, type="response")~predict.glm(modelo_cloglog, type="link"),
+     ylab = "Probabilidades",
+     xlab =  "modelo cloglog",
+     ylim=c(0,1))
+```
+
+## logit
+```{r}
+modelo_logit<- glm(Y ~ Sex + 
+               Age + 
+               Group + 
+               as.numeric(week),
+                     family = binomial(link = "logit"),
+                     data= dados_longos)
+modelo_logit$family
+summary(modelo_logit)
+hnp(modelo_logit, print.on = TRUE)
+
+plot(predict.glm(modelo_logit, type="response")~predict.glm(modelo_logit, type="link"),
+     ylab = "Probabilidades",
+     xlab =  "modelo logit",
+     ylim=c(0,1))
+
+```
+
+## probit
+
+```{r}
+modelo_probit<- glm(Y ~ Sex + 
+               Age + 
+               Group + 
+               as.numeric(week),
+                   family = binomial(link = "probit"),
+                   data= dados_longos)
+modelo_probit$family
+summary(modelo_probit)
+hnp(modelo_probit, print.on = TRUE)
+
+plot(predict.glm(modelo_probit, type="response")~predict.glm(modelo_probit, type="link"),
+     ylab = "Probabilidades",
+     xlab = "modelo probit",
+     ylim=c(0,1))
+```
+
+## cauchit
+
+```{r}
+modelo_cauchit<- glm(Y ~ Sex + 
+               Age + 
+               Group + 
+               as.numeric(week),
+                    family = binomial(link = "cauchit"),
+                    data= dados_longos)
+modelo_cauchit$family
+summary(modelo_cauchit)
+hnp(modelo_cauchit, print.on = TRUE)
+
+plot(predict.glm(modelo_cauchit, type="response")~predict.glm(modelo_cauchit, type="link"),
+     ylab = "Probabilidades",
+     xlab =  "modelo cauchit",
+     ylim=c(0,1))
+```
+
