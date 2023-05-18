@@ -225,3 +225,39 @@ plot(predict.glm(modelo_cauchit, type="response")~predict.glm(modelo_cauchit, ty
      ylim=c(0,1))
 ```
 
+# GEE
+
+
+## independence
+```{r}
+library(gee) 
+modelo_gee_1 <- gee(Y ~ Sex + Age + Group + as.numeric(week), 
+               data = dados_longos, 
+               id = id, 
+               family = binomial(link = "cloglog"),
+               corstr = "independence")
+summary(modelo_gee_1)
+```
+
+## exchangeable
+
+```{r}
+modelo_gee_2 <- gee(Y ~ Sex + Age + Group + as.numeric(week), 
+               data = dados_longos, 
+               id = id, 
+               family = binomial(link = "cloglog"),
+               corstr = "exchangeable")
+summary(modelo_gee_2)
+```
+
+## unstructured
+
+```{r}
+modelo_gee_3 <- gee(Y ~ Sex + Age + Group + as.numeric(week), 
+               data = dados_longos, 
+               id = id, 
+               family = binomial(link = "cloglog"),
+               corstr = "unstructured")
+summary(modelo_gee_3)
+```
+

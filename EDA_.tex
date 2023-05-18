@@ -105,7 +105,7 @@
 
 \title{Análise de dados (EDA)}
 \author{Cristian Villegas}
-\date{2023-05-04}
+\date{2023-05-18}
 
 \begin{document}
 \maketitle
@@ -710,5 +710,207 @@ Jalmar)}\label{transformando-dados-seguindo-o-feito-pelo-jalmar}}
 \end{Shaded}
 
 \includegraphics{EDA__files/figure-latex/unnamed-chunk-12-2.pdf}
+
+\hypertarget{gee}{%
+\section{GEE}\label{gee}}
+
+\hypertarget{independence}{%
+\subsection{independence}\label{independence}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{library}\NormalTok{(gee) }
+\NormalTok{modelo\_gee\_1 }\OtherTok{\textless{}{-}} \FunctionTok{gee}\NormalTok{(Y }\SpecialCharTok{\textasciitilde{}}\NormalTok{ Sex }\SpecialCharTok{+}\NormalTok{ Age }\SpecialCharTok{+}\NormalTok{ Group }\SpecialCharTok{+} \FunctionTok{as.numeric}\NormalTok{(week), }
+               \AttributeTok{data =}\NormalTok{ dados\_longos, }
+               \AttributeTok{id =}\NormalTok{ id, }
+               \AttributeTok{family =} \FunctionTok{binomial}\NormalTok{(}\AttributeTok{link =} \StringTok{"cloglog"}\NormalTok{),}
+               \AttributeTok{corstr =} \StringTok{"independence"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##      (Intercept)             Sex1             Age1           Group1 
+##      -0.46985374       0.29447851       0.05639087       0.57257244 
+## as.numeric(week) 
+##       0.06320692
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{summary}\NormalTok{(modelo\_gee\_1)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+##  GEE:  GENERALIZED LINEAR MODELS FOR DEPENDENT DATA
+##  gee S-function, version 4.13 modified 98/01/27 (1998) 
+## 
+## Model:
+##  Link:                      Cloglog 
+##  Variance to Mean Relation: Binomial 
+##  Correlation Structure:     Independent 
+## 
+## Call:
+## gee(formula = Y ~ Sex + Age + Group + as.numeric(week), id = id, 
+##     data = dados_longos, family = binomial(link = "cloglog"), 
+##     corstr = "independence")
+## 
+## Summary of Residuals:
+##        Min         1Q     Median         3Q        Max 
+## -0.8700482 -0.5528727  0.1848709  0.3163075  0.5138260 
+## 
+## 
+## Coefficients:
+##                     Estimate Naive S.E.   Naive z Robust S.E.   Robust z
+## (Intercept)      -0.46987242  0.2760654 -1.702033  0.32613496 -1.4407300
+## Sex1              0.29447626  0.2001501  1.471277  0.27987872  1.0521567
+## Age1              0.05640169  0.1753833  0.321591  0.24953232  0.2260296
+## Group1            0.57257352  0.1700686  3.366721  0.24311673  2.3551383
+## as.numeric(week)  0.06321248  0.0602626  1.048950  0.05275103  1.1983173
+## 
+## Estimated Scale Parameter:  1.015735
+## Number of Iterations:  1
+## 
+## Working Correlation
+##      [,1] [,2] [,3] [,4] [,5]
+## [1,]    1    0    0    0    0
+## [2,]    0    1    0    0    0
+## [3,]    0    0    1    0    0
+## [4,]    0    0    0    1    0
+## [5,]    0    0    0    0    1
+\end{verbatim}
+
+\hypertarget{exchangeable}{%
+\subsection{exchangeable}\label{exchangeable}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{modelo\_gee\_2 }\OtherTok{\textless{}{-}} \FunctionTok{gee}\NormalTok{(Y }\SpecialCharTok{\textasciitilde{}}\NormalTok{ Sex }\SpecialCharTok{+}\NormalTok{ Age }\SpecialCharTok{+}\NormalTok{ Group }\SpecialCharTok{+} \FunctionTok{as.numeric}\NormalTok{(week), }
+               \AttributeTok{data =}\NormalTok{ dados\_longos, }
+               \AttributeTok{id =}\NormalTok{ id, }
+               \AttributeTok{family =} \FunctionTok{binomial}\NormalTok{(}\AttributeTok{link =} \StringTok{"cloglog"}\NormalTok{),}
+               \AttributeTok{corstr =} \StringTok{"exchangeable"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##      (Intercept)             Sex1             Age1           Group1 
+##      -0.46985374       0.29447851       0.05639087       0.57257244 
+## as.numeric(week) 
+##       0.06320692
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{summary}\NormalTok{(modelo\_gee\_2)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+##  GEE:  GENERALIZED LINEAR MODELS FOR DEPENDENT DATA
+##  gee S-function, version 4.13 modified 98/01/27 (1998) 
+## 
+## Model:
+##  Link:                      Cloglog 
+##  Variance to Mean Relation: Binomial 
+##  Correlation Structure:     Exchangeable 
+## 
+## Call:
+## gee(formula = Y ~ Sex + Age + Group + as.numeric(week), id = id, 
+##     data = dados_longos, family = binomial(link = "cloglog"), 
+##     corstr = "exchangeable")
+## 
+## Summary of Residuals:
+##        Min         1Q     Median         3Q        Max 
+## -0.8599897 -0.5530691  0.1870639  0.3276707  0.5032505 
+## 
+## 
+## Coefficients:
+##                     Estimate Naive S.E.    Naive z Robust S.E.   Robust z
+## (Intercept)      -0.42904864 0.33365054 -1.2859222  0.32034671 -1.3393259
+## Sex1              0.27285705 0.28277327  0.9649323  0.27849472  0.9797567
+## Age1              0.08134966 0.24774357  0.3283623  0.24724658  0.3290224
+## Group1            0.53829103 0.24201844  2.2241736  0.24310512  2.2142316
+## as.numeric(week)  0.05314300 0.05066053  1.0490021  0.05083011  1.0455023
+## 
+## Estimated Scale Parameter:  0.9965314
+## Number of Iterations:  4
+## 
+## Working Correlation
+##           [,1]      [,2]      [,3]      [,4]      [,5]
+## [1,] 1.0000000 0.2907233 0.2907233 0.2907233 0.2907233
+## [2,] 0.2907233 1.0000000 0.2907233 0.2907233 0.2907233
+## [3,] 0.2907233 0.2907233 1.0000000 0.2907233 0.2907233
+## [4,] 0.2907233 0.2907233 0.2907233 1.0000000 0.2907233
+## [5,] 0.2907233 0.2907233 0.2907233 0.2907233 1.0000000
+\end{verbatim}
+
+\hypertarget{unstructured}{%
+\subsection{unstructured}\label{unstructured}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{modelo\_gee\_3 }\OtherTok{\textless{}{-}} \FunctionTok{gee}\NormalTok{(Y }\SpecialCharTok{\textasciitilde{}}\NormalTok{ Sex }\SpecialCharTok{+}\NormalTok{ Age }\SpecialCharTok{+}\NormalTok{ Group }\SpecialCharTok{+} \FunctionTok{as.numeric}\NormalTok{(week), }
+               \AttributeTok{data =}\NormalTok{ dados\_longos, }
+               \AttributeTok{id =}\NormalTok{ id, }
+               \AttributeTok{family =} \FunctionTok{binomial}\NormalTok{(}\AttributeTok{link =} \StringTok{"cloglog"}\NormalTok{),}
+               \AttributeTok{corstr =} \StringTok{"unstructured"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##      (Intercept)             Sex1             Age1           Group1 
+##      -0.46985374       0.29447851       0.05639087       0.57257244 
+## as.numeric(week) 
+##       0.06320692
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{summary}\NormalTok{(modelo\_gee\_3)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+##  GEE:  GENERALIZED LINEAR MODELS FOR DEPENDENT DATA
+##  gee S-function, version 4.13 modified 98/01/27 (1998) 
+## 
+## Model:
+##  Link:                      Cloglog 
+##  Variance to Mean Relation: Binomial 
+##  Correlation Structure:     Unstructured 
+## 
+## Call:
+## gee(formula = Y ~ Sex + Age + Group + as.numeric(week), id = id, 
+##     data = dados_longos, family = binomial(link = "cloglog"), 
+##     corstr = "unstructured")
+## 
+## Summary of Residuals:
+##        Min         1Q     Median         3Q        Max 
+## -0.8703654 -0.5230487  0.1650142  0.3603214  0.5205362 
+## 
+## 
+## Coefficients:
+##                      Estimate Naive S.E.     Naive z Robust S.E.    Robust z
+## (Intercept)      -0.468235192  0.3394253 -1.37949401  0.32501737 -1.44064666
+## Sex1              0.279293127  0.2731156  1.02261888  0.27175387  1.02774297
+## Age1              0.007621797  0.2397362  0.03179243  0.24396340  0.03124156
+## Group1            0.693890430  0.2333050  2.97417687  0.24223920  2.86448444
+## as.numeric(week)  0.041897668  0.0552891  0.75779257  0.04990972  0.83946913
+## 
+## Estimated Scale Parameter:  1.028027
+## Number of Iterations:  7
+## 
+## Working Correlation
+##           [,1]       [,2]       [,3]      [,4]      [,5]
+## [1,] 1.0000000 0.64699683 0.19879899 0.3105900 0.2345909
+## [2,] 0.6469968 1.00000000 0.02545539 0.2919917 0.1593287
+## [3,] 0.1987990 0.02545539 1.00000000 0.1337962 0.2364074
+## [4,] 0.3105900 0.29199173 0.13379622 1.0000000 0.1851979
+## [5,] 0.2345909 0.15932868 0.23640737 0.1851979 1.0000000
+\end{verbatim}
 
 \end{document}
